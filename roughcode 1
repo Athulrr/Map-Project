@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Pilot page with a map feature showcasing hidden tourism spots in Kerala.">
+  <title>Pilot Page - Hidden Tourism Spots in Kerala</title>
+  
+  <!-- Link to external CSS -->
+  <link rel="stylesheet" href="styles.css">
+  
+  <!-- Link to Leaflet.js CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+</head>
+<body>
+  <div id="container">
+    <!-- Header Section -->
+    <header id="header">
+      <div class="logo">
+        <img src="logo.png" alt="Logo" width="150" height="90">
+      </div>
+      <nav>
+        <ul>
+          <li><a href="#map">Map</a></li>
+          <li><a href="#about">About</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </nav>
+    </header>
+    
+    <!-- Main Content Section -->
+    <main id="main-content">
+      <section id="map-section">
+        <h1>Explore Hidden Tourism Spots in Kerala</h1>
+        <div id="map" style="height: 500px;"></div>
+        <p>Click on the map to add a tag for a hidden spot.</p>
+      </section>
+    </main>
+    
+    <!-- Footer Section -->
+    <footer id="footer">
+      <div class="footer-content">
+        <ul>
+          <li><a href="#about">About</a></li>
+          <li><a href="#contact">Contact</a></li>
+          <li><a href="#terms">Terms</a></li>
+          <li><a href="#privacy">Privacy</a></li>
+        </ul>
+      </div>
+    </footer>
+  </div>
+  
+  <!-- External JavaScript -->
+  <script src="scripts.js"></script>
+  <script>
+    // Initialize map centered on Kerala, India
+    var map = L.map('map').setView([10.8505, 76.2711], 8);
+    
+    // Set up the tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // Function to add marker on click
+    function onMapClick(e) {
+      var marker = L.marker(e.latlng).addTo(map)
+        .bindPopup('New hidden spot.')
+        .openPopup();
+
+      // You can store the marker information for later use or processing
+      console.log(`Marker added at: ${e.latlng}`);
+    }
+
+    // Add click event listener
+    map.on('click', onMapClick);
+  </script>
+</body>
+</html>

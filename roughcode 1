@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>  
-this is the change 
+<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Pilot page with a map feature showcasing hidden tourism spots in Kerala.">
-  <title>Pilot Page - Hidden Tourism Spots in Kerala</title>
+  <meta name="description" content="Explore and add hidden tourism spots in Kerala.">
+  <title>Hidden Tourism Spots in Kerala</title>
   
   <!-- Link to external CSS -->
   <link rel="stylesheet" href="styles.css">
@@ -23,7 +22,8 @@ this is the change
       </div>
       <nav>
         <ul>
-          <li><a href="#map">Map</a></li>
+          <li><a href="#" onclick="showSection('map-section')">Map</a></li>
+          <li><a href="#" onclick="showSection('add-place-section')">Add Place</a></li>
           <li><a href="#about">About</a></li>
           <li><a href="#contact">Contact</a></li>
         </ul>
@@ -32,10 +32,33 @@ this is the change
     
     <!-- Main Content Section -->
     <main id="main-content">
+      <!-- Map Section -->
       <section id="map-section">
         <h1>Explore Hidden Tourism Spots in Kerala</h1>
         <div id="map" style="height: 500px;"></div>
-        <p>Click on the map to add a tag for a hidden spot.</p>
+      </section>
+      
+      <!-- Add Place Section -->
+      <section id="add-place-section" style="display:none;">
+        <h1>Add a New Hidden Spot</h1>
+        <form id="add-place-form">
+          <label for="name">Name:</label>
+          <input type="text" id="name" name="name" required>
+
+          <label for="description">Description:</label>
+          <textarea id="description" name="description" required></textarea>
+
+          <label for="latitude">Latitude:</label>
+          <input type="number" step="any" id="latitude" name="latitude" required>
+
+          <label for="longitude">Longitude:</label>
+          <input type="number" step="any" id="longitude" name="longitude" required>
+
+          <!-- Small Map for selecting the location -->
+          <div id="small-map" style="height: 300px;"></div>
+
+          <button type="submit">Add Place</button>
+        </form>
       </section>
     </main>
     
@@ -53,28 +76,86 @@ this is the change
   </div>
   
   <!-- External JavaScript -->
-  <script src="scripts.js"></script>
   <script>
-    // Initialize map centered on Kerala, India
-    var map = L.map('map').setView([10.8505, 76.2711], 8);
+    // Initialize main map centered on Kerala, India
+    var mainMap = L.map('map').setView([10.8505, 76.2711], 8);
     
-    // Set up the tile layer
+    // Set up the tile layer for the main map
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(map);
+    }).addTo(mainMap);
 
-    // Function to add marker on click
-    function onMapClick(e) {
-      var marker = L.marker(e.latlng).addTo(map)
-        .bindPopup('New hidden spot.')
-        .openPopup();
-
-      // You can store the marker information for later use or processing
-      console.log(`Marker added at: ${e.latlng}`);
+    // Load places from localStorage and display on the main map
+    function loadPlaces() {
+      const places = JSON.parse(localStorage.getItem('places')) || [];
+      places.forEach(place => {
+        L.marker([place.lat, place.lng]).addTo(mainMap)
+          .bindPopup(`<strong>${place.name}</strong><br>${place.description}`);
+      });
     }
 
-    // Add click event listener
-    map.on('click', onMapClick);
+    // Load places when the page loads
+    window.onload = loadPlaces;
+
+    // Function to show the specified section
+    function showSection(sectionId) {
+      document.getElementById('map-section').style.display = 'none';
+      document.getElementById('add-place-section').style.display = 'none';
+      document.getElementById(sectionId).style.display = 'block';
+    }
+
+    // Initialize small map for selecting a location in the add place form
+    var smallMap = L.map('small-map').setView([10.8505, 76.2711], 8);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(smallMap);
+
+    var selectedMarker;
+    smallMap.on('click', function(e) {
+      var lat = e.latlng.lat;
+      var lng = e.latlng.lng;
+
+      if (selectedMarker) {
+        smallMap.removeLayer(selectedMarker);
+      }
+
+      selectedMarker = L.marker([lat, lng]).addTo(smallMap);
+
+      document.getElementById('latitude').value = lat;
+      document.getElementById('longitude').value = lng;
+    });
+
+    // Function to save the place to localStorage
+    document.getElementById('add-place-form').addEventListener('submit', function(event) {
+      event.preventDefault();
+      
+      const name = document.getElementById('name').value;
+      const description = document.getElementById('description').value;
+      const latitude = parseFloat(document.getElementById('latitude').value);
+      const longitude = parseFloat(document.getElementById('longitude').value);
+
+      const newPlace = {
+        name,
+        description,
+        lat: latitude,
+        lng: longitude
+      };
+
+      // Retrieve the existing places from localStorage
+      const places = JSON.parse(localStorage.getItem('places')) || [];
+
+      // Add the new place
+      places.push(newPlace);
+
+      // Save the updated places array to localStorage
+      localStorage.setItem('places', JSON.stringify(places));
+
+      // Reset form and navigate back to the map section
+      document.getElementById('add-place-form').reset();
+      if (selectedMarker) smallMap.removeLayer(selectedMarker);
+      showSection('map-section');
+      loadPlaces();
+    });
   </script>
 </body>
 </html>
